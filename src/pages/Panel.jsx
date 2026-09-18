@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   api,
-  calcularMarca,
-  CAPS,
+  bumpControlMarca,
   clearSession,
+  desgloseMarca,
+  formatearMarca,
   formatTiempo,
   getToken,
+  setControlMarca,
 } from "../api.js";
 
 const MAX = 150;
@@ -15,9 +17,7 @@ function emptyLane() {
   return {
     inscrito: null,
     query: "",
-    series: 0,
-    ejercicio: "Ninguno",
-    reps: 0,
+    marca: "0.00",
     running: false,
     elapsed: 0,
     saved: "",
@@ -85,9 +85,7 @@ export default function Panel() {
         method: "PUT",
         body: JSON.stringify({
           inscrito_id: l.inscrito.id,
-          series_completadas: l.series,
-          ejercicio_parcial: l.ejercicio,
-          reps_parciales: l.ejercicio === "Ninguno" ? 0 : l.reps,
+          marca_circuito: l.marca,
           tiempo_segundos: l.elapsed,
         }),
       });
@@ -141,8 +139,9 @@ export default function Panel() {
       </div>
 
       <p className="hint">
-        Serie válida: 5 dominadas + 10 fondos + 15 flexiones. Si falla una serie, se reinicia desde
-        dominadas. Pausar un carril no detiene el de al lado.
+        Serie válida: 5 dominadas + 10 fondos + 15 flexiones. Si falla una serie, reinicia las reps
+        (la parte decimal vuelve a 0). 3.29 + 1 flexión = 4.00. Pausar un carril no detiene el de al
+        lado.
       </p>
 
       <div className={`lanes n-${lanesN}`}>
@@ -161,6 +160,27 @@ export default function Panel() {
   );
 }
 
+function Stepper({ label, value, onBump, onType }) {
+  return (
+    <div className="counter">
+      <span>{label}</span>
+      <div className="stepper">
+        <button type="button" onClick={() => onBump(-1)}>
+          −
+        </button>
+        <input
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => onType(e.target.value)}
+        />
+        <button type="button" onClick={() => onBump(1)}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Lane({ index, lane, atletas, onPatch, onSave }) {
   const filtrados = useMemo(() => {
     const q = lane.query.trim().toLowerCase();
@@ -172,16 +192,10 @@ function Lane({ index, lane, atletas, onPatch, onSave }) {
     );
   }, [atletas, lane.query]);
 
-  const cap = lane.ejercicio === "Ninguno" ? 0 : CAPS[lane.ejercicio];
-  const marca = calcularMarca(lane.series, lane.ejercicio, lane.reps);
+  const d = desgloseMarca(lane.marca);
 
-  function setEjercicio(ej) {
-    onPatch(index, { ejercicio: ej, reps: ej === "Ninguno" ? 0 : Math.min(lane.reps, CAPS[ej] || 0) });
-  }
-
-  function bump(field, delta, min, max) {
-    const next = Math.min(max, Math.max(min, (lane[field] || 0) + delta));
-    onPatch(index, { [field]: next });
+  function setMarca(next) {
+    onPatch(index, { marca: next });
   }
 
   return (
@@ -205,9 +219,7 @@ function Lane({ index, lane, atletas, onPatch, onSave }) {
           const found = atletas.find((a) => String(a.id) === e.target.value) || null;
           onPatch(index, {
             inscrito: found,
-            series: found?.resultado?.series_completadas || 0,
-            ejercicio: found?.resultado?.ejercicio_parcial || "Ninguno",
-            reps: found?.resultado?.reps_parciales || 0,
+            marca: formatearMarca(found?.resultado?.marca_circuito ?? 0),
             elapsed: found?.resultado?.tiempo_segundos || 0,
             saved: "",
           });
@@ -238,63 +250,40 @@ function Lane({ index, lane, atletas, onPatch, onSave }) {
           type="button"
           onClick={() => onPatch(index, { running: false, elapsed: 0 })}
         >
-          Reset
+          Reset tiempo
         </button>
       </div>
 
       <div className="counters">
-        <div className="counter">
-          <span>Series completas</span>
-          <div className="stepper">
-            <button type="button" onClick={() => bump("series", -1, 0, 99)}>
-              −
-            </button>
-            <input
-              inputMode="numeric"
-              value={lane.series}
-              onChange={(e) =>
-                onPatch(index, { series: Math.max(0, parseInt(e.target.value || "0", 10) || 0) })
-              }
-            />
-            <button type="button" onClick={() => bump("series", 1, 0, 99)}>
-              +
-            </button>
-          </div>
-        </div>
-        <div className="field">
-          <select value={lane.ejercicio} onChange={(e) => setEjercicio(e.target.value)}>
-            <option value="Ninguno">Serie cerrada / ninguno</option>
-            <option value="Dominadas">Parcial: Dominadas (máx 5)</option>
-            <option value="Fondos">Parcial: Fondos (máx 10)</option>
-            <option value="Flexiones">Parcial: Flexiones (máx 15)</option>
-          </select>
-        </div>
-        {lane.ejercicio !== "Ninguno" && (
-          <div className="counter">
-            <span>Reps {lane.ejercicio}</span>
-            <div className="stepper">
-              <button type="button" onClick={() => bump("reps", -1, 0, cap)}>
-                −
-              </button>
-              <input
-                inputMode="numeric"
-                value={lane.reps}
-                onChange={(e) => {
-                  const n = parseInt(e.target.value || "0", 10) || 0;
-                  onPatch(index, { reps: Math.min(cap, Math.max(0, n)) });
-                }}
-              />
-              <button type="button" onClick={() => bump("reps", 1, 0, cap)}>
-                +
-              </button>
-            </div>
-          </div>
-        )}
+        <Stepper
+          label="Series completas"
+          value={d.series}
+          onBump={(delta) => setMarca(bumpControlMarca(lane.marca, "series", delta))}
+          onType={(v) => setMarca(setControlMarca(lane.marca, "series", v))}
+        />
+        <Stepper
+          label="Dominadas (5)"
+          value={d.dominadas}
+          onBump={(delta) => setMarca(bumpControlMarca(lane.marca, "dominadas", delta))}
+          onType={(v) => setMarca(setControlMarca(lane.marca, "dominadas", v))}
+        />
+        <Stepper
+          label="Fondos (10)"
+          value={d.fondos}
+          onBump={(delta) => setMarca(bumpControlMarca(lane.marca, "fondos", delta))}
+          onType={(v) => setMarca(setControlMarca(lane.marca, "fondos", v))}
+        />
+        <Stepper
+          label="Flexiones (15 → serie)"
+          value={d.flexiones}
+          onBump={(delta) => setMarca(bumpControlMarca(lane.marca, "flexiones", delta))}
+          onType={(v) => setMarca(setControlMarca(lane.marca, "flexiones", v))}
+        />
       </div>
 
-      <div className="marca">{marca}</div>
+      <div className="marca">{lane.marca}</div>
       <p className="hint" style={{ textAlign: "center" }}>
-        marca_circuito
+        marca_circuito (única marca guardada)
       </p>
       <button className="btn" type="button" onClick={() => onSave(index)}>
         Guardar y enviar resultado
