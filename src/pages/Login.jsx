@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, setSession } from "../api.js";
+import { api, getToken, setSession } from "../api.js";
 
 export default function Login() {
   const [digits, setDigits] = useState(["", "", "", ""]);
@@ -8,6 +8,14 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const refs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = getToken();
+    const rol = localStorage.getItem("d58_rol");
+    if (token && rol) {
+      navigate(rol === "admin" ? "/admin" : "/panel", { replace: true });
+    }
+  }, [navigate]);
 
   function onChange(i, value) {
     const v = value.replace(/\D/g, "").slice(-1);

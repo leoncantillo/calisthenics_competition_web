@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, formatTiempo } from "../api.js";
+import { api, formatTiempo, getToken } from "../api.js";
 
 export default function Podio() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
+  const hasSession = Boolean(getToken());
 
   async function load() {
     try {
@@ -43,7 +44,7 @@ export default function Podio() {
         ))}
       </div>
       <div className="links">
-        <Link to="/">Acceso jueces</Link>
+        <Link to="/">{hasSession ? "Volver al panel" : "Acceso jueces"}</Link>
         <button className="btn ghost" type="button" onClick={load}>
           Actualizar
         </button>
