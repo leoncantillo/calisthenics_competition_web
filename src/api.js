@@ -20,10 +20,17 @@ export async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${API}${path}`, { ...options, headers });
+  let res;
+  try {
+    res = await fetch(`${API}${path}`, { ...options, headers });
+  } catch (err) {
+    throw new Error("Error de conexión con el servidor. Verifica tu red.");
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(json.error || "Error de red");
+    throw new Error(
+      json.error || `Error ${res.status}: ${res.statusText || "Respuesta no válida del servidor"}`
+    );
   }
   return json;
 }
