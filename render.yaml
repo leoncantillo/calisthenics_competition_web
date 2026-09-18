@@ -1,0 +1,4 @@
+# https://render.com/docs/blueprint-spec
+# En el dashboard: Build `npm install && npm run build`, Publish `dist`,
+# env VITE_API_URL=https://TU-API.onrender.com
+# SPA rewrite: /* → /index.html
