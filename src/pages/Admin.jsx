@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, clearSession, getToken } from "../api.js";
 
-const BLOQUES = ["Basicos", "Street Lifting", "Estaticos"];
+const BLOQUES = ["Básicos", "Street Lifting", "Estáticos"];
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -145,8 +145,8 @@ export default function Admin() {
       <section>
         <h2>Alertas de exclusión</h2>
         <p className="hint">
-          Quienes marcaron Básicos junto a Street Lifting o Estáticos quedan en Pendiente hasta que
-          definas el bloque definitivo.
+          Las alertas corresponden a participantes que solicitaron Básicos junto a Street Lifting y/o Estáticos.
+          En estos casos, Básicos tiene prioridad y los demás bloques son excluidos.
         </p>
 
         {error && <p className="err">{error}</p>}
@@ -159,7 +159,7 @@ export default function Admin() {
               #{r.numero_dorsal} · {r.nombre_completo}
             </strong>
             <p>Solicitó: {r.bloque_solicitado}</p>
-            <p>Asignado ahora: {r.bloque_asignado}</p>
+            <p>Asignado ahora: {r.bloque_asignado || "Sin asignar"}</p>
             <div className="toolbar">
               {BLOQUES.map((b) => (
                 <button key={b} className="btn secondary" type="button" style={{ width: "auto" }} onClick={() => asignar(r.id, b)}>
@@ -177,3 +177,4 @@ export default function Admin() {
     </div>
   );
 }
+
