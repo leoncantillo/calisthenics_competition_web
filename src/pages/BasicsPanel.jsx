@@ -25,7 +25,7 @@ function emptyLane() {
   };
 }
 
-export default function Panel() {
+export default function BasicsPanel() {
   const navigate = useNavigate();
   const [lanesN, setLanesN] = useState(1);
   const [atletas, setAtletas] = useState([]);
@@ -133,7 +133,7 @@ export default function Panel() {
         <button className="btn" type="button" style={{ width: "auto" }} onClick={startAll}>
           Iniciar todos
         </button>
-        <Link className="btn secondary" style={{ width: "auto" }} to="/podio">
+        <Link className="btn secondary" style={{ width: "auto" }} to="/basicos/podio">
           Podio
         </Link>
       </div>
