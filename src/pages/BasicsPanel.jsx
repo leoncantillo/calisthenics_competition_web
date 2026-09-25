@@ -156,6 +156,10 @@ export default function BasicsPanel() {
           />
         ))}
       </div>
+
+      <Link className="btn ghost" to="/">
+        Volver a la página principal
+      </Link>
     </div>
   );
 }
