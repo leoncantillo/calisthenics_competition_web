@@ -189,6 +189,20 @@ button, input, select { font: inherit; }
 .podio-row .puesto { font-weight: 800; color: var(--gold); }
 .podio-row.top { background: linear-gradient(90deg, #2a2208, transparent); margin: 0 -16px; padding: 12px 16px; border-radius: 8px; }
 
+.glass-table tr.top {
+  background: linear-gradient(90deg, #2a2208, transparent);
+}
+
+.glass-table tr.top td:first-child {
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.glass-table th,
+.glass-table td {
+  padding-inline: 16px;
+}   
+
 .alert-item { margin-bottom: 12px; }
 .alert-item p { margin: 6px 0; color: var(--muted); font-size: 0.9rem; }
 

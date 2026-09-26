@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 
 export default function StreetPanel() {
   const [participantes, setParticipantes] = useState([]);
-  const [movimientos, setMovimientos] = useState([]);
-  const [activo, setActivo] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -18,11 +16,8 @@ export default function StreetPanel() {
       try {
         const [pRes, mRes] = await Promise.all([
           api("/api/resultados-street/participantes"),
-          api("/api/resultados-street/movimiento-activo"),
         ]);
         setParticipantes(pRes.participantes || []);
-        setMovimientos(mRes.movimientos || []);
-        setActivo(mRes.movimiento_activo);
         setLoading(false);
       } catch (e) {
         setError(e.message);
@@ -58,57 +53,15 @@ export default function StreetPanel() {
     }
   };
 
-  const cambiarActivo = async (mov) => {
-    try {
-      const resp = await api("/api/resultados-street/movimiento-activo", {
-        method: "PATCH",
-        body: JSON.stringify({ movimiento: mov }),
-      });
-      setActivo(resp.movimiento_activo || mov);
-      setMsg("Movimiento activo actualizado");
-    } catch (e) {
-      setError(e.message);
-    }
-  };
-
   if (loading) return <div className="loader">Cargando...</div>;
   if (error) return <p className="err">{error}</p>;
-
-  const esto = () => (
-    <input
-      type="number"
-      defaultValue={p.peso_corporal ?? ""}
-      min="0"
-      step="0.01"
-      onBlur={(e) => {
-        const val = e.target.value;
-        if (val && Number(val) !== p.peso_corporal) {
-          actualizarPeso(p.id, val);
-        }
-      }}
-    />
-  );
 
   return (
     <div className="street-page admin">
       <h1>Administración Street Lifting</h1>
 
       <section className="card">
-        <h2>Movimiento activo</h2>
-        <select
-          value={activo}
-          onChange={(e) => cambiarActivo(e.target.value)}
-        >
-          {movimientos.map((m) => (
-            <option key={m.movimiento} value={m.movimiento}>
-              {m.nombre}
-            </option>
-          ))}
-        </select>
-      </section>
-
-      <section className="card">
-        <h2>Participantes</h2>
+        <h2>Registro de peso corporal</h2>
         <table className="glass-table">
           <thead>
             <tr>
@@ -161,6 +114,7 @@ export default function StreetPanel() {
                     ) : (
                       <button
                         type="button"
+                        className="btn secondary"
                         onClick={() => {
                           setEditingId(p.id);
                           setEditingWeight(p.peso_corporal ?? "");
