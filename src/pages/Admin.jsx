@@ -170,10 +170,6 @@ export default function Admin() {
           </article>
         ))}
       </section>
-
-      <div className="links">
-        <Link to="/podio">Ver Podio Público</Link>
-      </div>
     </div>
   );
 }

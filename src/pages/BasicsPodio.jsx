@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, formatTiempo, getToken } from "../api.js";
 
-export default function Podio() {
+export default function BasicsPodio() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
   const hasSession = Boolean(getToken());
@@ -44,7 +44,7 @@ export default function Podio() {
         ))}
       </div>
       <div className="links">
-        <Link to="/">{hasSession ? "Volver al panel" : "Acceso jueces"}</Link>
+        <Link to={hasSession ? "/basicos/panel" : "/"}>{hasSession ? "Volver al panel" : "Acceso jueces"}</Link>
         <button className="btn ghost" type="button" onClick={load}>
           Actualizar
         </button>

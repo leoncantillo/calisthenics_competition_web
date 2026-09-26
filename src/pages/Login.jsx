@@ -13,7 +13,7 @@ export default function Login() {
     const token = getToken();
     const rol = localStorage.getItem("d58_rol");
     if (token && rol) {
-      navigate(rol === "admin" ? "/admin" : "/panel", { replace: true });
+      navigate(rol === "admin" ? "/admin" : "/chooseblock", { replace: true });
     }
   }, [navigate]);
 
@@ -44,7 +44,7 @@ export default function Login() {
         body: JSON.stringify({ pin }),
       });
       setSession(data);
-      navigate(data.rol === "admin" ? "/admin" : "/panel");
+      navigate(data.rol === "admin" ? "/admin" : "/chooseblock");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -56,10 +56,10 @@ export default function Login() {
     <div className="shell">
       <div className="brand">
         <small>Universidad del Magdalena</small>
-        <h1>Distrito 58 · Bloque de Básicos</h1>
+        <h1>Distrito 58</h1>
       </div>
       <form className="card" onSubmit={submit}>
-        <p className="hint">PIN del juez (solo Básicos) o de organización.</p>
+        <p className="hint">PIN del juez o de organización.</p>
         <div className="pin-row">
           {digits.map((d, i) => (
             <input
@@ -80,9 +80,6 @@ export default function Login() {
           {loading ? "Validando…" : "Entrar"}
         </button>
       </form>
-      <div className="links">
-        <Link to="/podio">Ver podio público</Link>
-      </div>
     </div>
   );
 }
