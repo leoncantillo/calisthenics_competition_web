@@ -23,9 +23,10 @@ export default function StreetRegistration() {
       <h1>Registro Street Lifting</h1>
 
       <section className="card">
-        <div 
+        <div
           className="field"
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "left", gap: "0.5rem" }}
+        >
           <label>Movimiento actual </label>
           <select
             value={movimiento}
@@ -35,6 +36,14 @@ export default function StreetRegistration() {
             <option value="dominada">Dominada</option>
             <option value="fondos">Fondos</option>
           </select>
+
+          <Link
+            className="btn primary"
+            style={{ marginLeft: "3rem", width: "fit-content" }}
+            to="/street/podio"
+          >
+            Ver Podio
+          </Link>
         </div>
       </section>
 
