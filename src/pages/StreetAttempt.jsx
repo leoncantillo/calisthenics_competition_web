@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { api } from "../api.js";
+import "../styles/StreetAttempt.css";
 
 export default function StreetAttempt() {
   const { inscritoId } = useParams();
@@ -12,7 +13,6 @@ export default function StreetAttempt() {
   const [esValido, setEsValido] = useState(true);
   const [msg, setMsg] = useState(null);
   const [error, setError] = useState(null);
-  const [pesoEditable, setPesoEditable] = useState(true);
 
   useEffect(() => {
     api(`/api/resultados-street/participantes/${inscritoId}`)
@@ -36,7 +36,6 @@ export default function StreetAttempt() {
 
       setMsg(`Intento registrado (peso ${resp.intento.peso} kg)`);
       setPeso("");
-      setPesoEditable(false);
     } catch (err) {
       setMsg(err.message);
     }
@@ -44,52 +43,69 @@ export default function StreetAttempt() {
 
   if (error) return <p className="err">{error}</p>;
   if (!inscrito) return <div className="loader">Cargando participante…</div>;
+  // Prevent attempts if body weight not registered
+  if (!inscrito.peso_corporal) {
+    return (
+      <p className="err">
+        Debe registrar el peso corporal antes de registrar intentos.
+        <br />
+        <Link className="btn secondary" to="/street/panel">Ir al panel de peso</Link>
+      </p>
+    );
+  }
 
   return (
-    <div className="street-page attempt">
+    <div className="street-page attempt shell">
       <h1>Intento – {inscrito.nombre_completo}</h1>
 
-      <p>Dorsal: #{inscrito.numero_dorsal}</p>
-      <p>Peso corporal: {inscrito.peso_corporal ?? "-"} kg</p>
+      <div className="card attempt-form">
+        <p>Dorsal: #{inscrito.numero_dorsal}</p>
+        <p>Peso corporal: {inscrito.peso_corporal ?? "-"} kg</p>
 
-      <div className="field">
-        <label>Peso a cargar (kg)</label>
-        <input
-          type="number"
-          value={peso}
-          onChange={(e) => setPeso(e.target.value)}
-          placeholder="0.00"
-          disabled={!pesoEditable}
-        />
-
-        {!pesoEditable && (
-          <button
-            className="btn ghost"
-            onClick={() => setPesoEditable(true)}
-          >
-            Editar intento peso
-          </button>
-        )}
-      </div>
-
-      <div className="field">
-        <label>
+        <div
+          className="field"
+          style={{ marginBottom: "1rem" }}
+        >
+          <label>Peso a cargar (kg)</label>
           <input
-            type="checkbox"
-            checked={esValido}
-            onChange={(e) => setEsValido(e.target.checked)}
+            type="number"
+            value={peso}
+            onChange={(e) => setPeso(e.target.value)}
+            placeholder="0.00"
+            style={{ marginLeft: "1rem" }}
           />
-          Intento válido
-        </label>
-      </div>
+        </div>
 
-      <button
-        className="btn"
-        onClick={registrarIntento}
-        disabled={!peso}
-      >
-        Registrar intento
-      </button>
+        <div className="field">
+          <label>Resultado del intento</label>
+
+          <div className="attempt-status">
+            <button
+              type="button"
+              className={`attempt-status-btn ${esValido ? "selected valid" : ""}`}
+              onClick={() => setEsValido(true)}
+            >
+              VÁLIDO
+            </button>
+
+            <button
+              type="button"
+              className={`attempt-status-btn ${!esValido ? "selected invalid" : ""}`}
+              onClick={() => setEsValido(false)}
+            >
+              NULO
+            </button>
+          </div>
+        </div>
+
+        <button
+          className="btn btn-register"
+          onClick={registrarIntento}
+          disabled={!peso}
+        >
+          Registrar intento
+        </button>
+      </div>
 
       {msg && <p className="err">{msg}</p>}
 
