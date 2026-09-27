@@ -56,7 +56,7 @@ export default function StreetAttempt() {
   }
 
   return (
-    <div className="street-page attempt">
+    <div className="street-page attempt shell">
       <h1>Intento – {inscrito.nombre_completo}</h1>
 
       <p>Dorsal: #{inscrito.numero_dorsal}</p>

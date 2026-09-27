@@ -19,7 +19,7 @@ export default function StreetRegistration() {
   if (msg) return <p className="err">{msg}</p>;
 
   return (
-    <div className="street-page registration">
+    <div className="street-page registration shell">
       <h1>Registro Street Lifting</h1>
 
       <section className="card">

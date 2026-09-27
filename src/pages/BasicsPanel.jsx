@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   api,
   bumpControlMarca,
-  clearSession,
   desgloseMarca,
   formatearMarca,
   formatTiempo,
@@ -107,16 +106,6 @@ export default function BasicsPanel() {
             <h1>Circuito 2:30 · Básicos</h1>
           </div>
         </div>
-        <button
-          className="btn ghost"
-          type="button"
-          onClick={() => {
-            clearSession();
-            navigate("/");
-          }}
-        >
-          Salir
-        </button>
       </div>
 
       <div className="toolbar">

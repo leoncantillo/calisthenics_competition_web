@@ -115,7 +115,7 @@ export default function StreetParticipantAttempts() {
     const movimientosParticipante = inscrito.movimientos || [];
 
     return (
-        <div className="street-page attempts">
+        <div className="street-page attempts shell">
             <h1>Intentos – {inscrito.nombre_completo}</h1>
 
             <p>Dorsal: #{inscrito.numero_dorsal}</p>

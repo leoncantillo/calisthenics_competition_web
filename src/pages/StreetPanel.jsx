@@ -57,7 +57,7 @@ export default function StreetPanel() {
   if (error) return <p className="err">{error}</p>;
 
   return (
-    <div className="street-page admin">
+    <div className="street-page admin shell">
       <h1>Administración Street Lifting</h1>
 
       <section className="card">
