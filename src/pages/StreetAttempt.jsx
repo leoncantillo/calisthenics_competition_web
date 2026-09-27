@@ -44,6 +44,16 @@ export default function StreetAttempt() {
 
   if (error) return <p className="err">{error}</p>;
   if (!inscrito) return <div className="loader">Cargando participante…</div>;
+  // Prevent attempts if body weight not registered
+  if (!inscrito.peso_corporal) {
+    return (
+      <p className="err">
+        Debe registrar el peso corporal antes de registrar intentos.
+        <br />
+        <Link className="btn secondary" to="/street/panel">Ir al panel de peso</Link>
+      </p>
+    );
+  }
 
   return (
     <div className="street-page attempt">
