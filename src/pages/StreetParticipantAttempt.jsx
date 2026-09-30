@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
 
@@ -23,23 +23,18 @@ export default function StreetParticipantAttempts() {
     const [error, setError] = useState(null);
     const [msg, setMsg] = useState(null);
 
-    useEffect(() => {
-        async function fetchParticipante() {
-            try {
-                const data = await api(
-                    `/api/resultados-street/participantes/${inscritoId}`
-                );
-
-                setInscrito(data.inscrito);
-            } catch (e) {
-                setError(e.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchParticipante();
+    const cargar = useCallback(async () => {
+        const data = await api(
+            `/api/resultados-street/participantes/${inscritoId}`
+        );
+        setInscrito(data.inscrito);
     }, [inscritoId]);
+
+    useEffect(() => {
+        cargar()
+            .catch((e) => setError(e.message))
+            .finally(() => setLoading(false));
+    }, [cargar]);
 
     const iniciarEdicion = (intento) => {
         setMsg(null);
@@ -69,7 +64,7 @@ export default function StreetParticipantAttempts() {
 
             const peso = Number(editingPeso);
 
-            const resp = await api(`/api/resultados-street/intento/${intento.id}`, {
+            await api(`/api/resultados-street/intento/${intento.id}`, {
                 method: "PUT",
                 body: JSON.stringify({
                     peso,
@@ -77,19 +72,9 @@ export default function StreetParticipantAttempts() {
                 }),
             });
 
-            const intentoActualizado = resp.intento;
-
-            setInscrito((prev) => ({
-                ...prev,
-                resultadoStreet: {
-                    ...prev.resultadoStreet,
-                    intentos: prev.resultadoStreet.intentos.map((item) =>
-                        item.id === intento.id
-                            ? intentoActualizado
-                            : item
-                    ),
-                },
-            }));
+            // Se recarga el participante en vez de parchear el estado a mano: así
+            // el mejor peso, el puntaje y el total quedan recalculados por el backend.
+            await cargar();
 
             setMsg("Intento actualizado correctamente");
             cancelarEdicion();
