@@ -1,79 +1,178 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { api } from "../api.js";
 import "../styles/StreetAttempt.css";
 
+const MAX_INTENTOS = 3;
+
+const MOV_LABEL = {
+  MUSCLE_UP: "Muscle Up",
+  DOMINADA: "Dominada",
+  FONDOS: "Fondos",
+};
+
+/**
+ * Deriva por cuál intento va el participante en un movimiento.
+ * El backend ya asigna el número solo (intentos.length + 1) y solo avisa cuando
+ * los tres están usados, así que acá se calcula lo mismo para mostrarlo antes.
+ */
+export function resumenIntentos(inscrito, movimientoKey) {
+  const mov = inscrito?.movimientos?.[movimientoKey] || null;
+  const intentos = [...(mov?.intentos ?? [])].sort(
+    (a, b) => a.numero_intento - b.numero_intento
+  );
+  const ultimo = intentos.length > 0 ? intentos[intentos.length - 1] : null;
+
+  return {
+    intentos,
+    usados: intentos.length,
+    proximo: intentos.length + 1,
+    completado: Boolean(mov?.completado) || intentos.length >= MAX_INTENTOS,
+    // El backend rechaza cargar menos que el intento anterior.
+    pesoMinimo: ultimo ? Number(ultimo.peso) : null,
+  };
+}
+
 export default function StreetAttempt() {
   const { inscritoId } = useParams();
   const [searchParams] = useSearchParams();
-  const movActivo = searchParams.get("movimiento");
+  // El movimiento llega por querystring en minúsculas ("muscle_up").
+  const movKey = String(searchParams.get("movimiento") || "").toUpperCase();
 
   const [inscrito, setInscrito] = useState(null);
   const [peso, setPeso] = useState("");
   const [esValido, setEsValido] = useState(true);
-  const [msg, setMsg] = useState(null);
+  const [ok, setOk] = useState(null);
   const [error, setError] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+
+  const cargar = useCallback(async () => {
+    const data = await api(`/api/resultados-street/participantes/${inscritoId}`);
+    setInscrito(data.inscrito);
+    // El siguiente intento no puede pesar menos que el anterior: se precarga.
+    const { pesoMinimo } = resumenIntentos(data.inscrito, movKey);
+    setPeso(pesoMinimo !== null ? String(pesoMinimo) : "");
+  }, [inscritoId, movKey]);
 
   useEffect(() => {
-    api(`/api/resultados-street/participantes/${inscritoId}`)
-      .then((data) => setInscrito(data.inscrito))
-      .catch((e) => setError(e.message));
-  }, [inscritoId]);
+    cargar().catch((e) => setError(e.message));
+  }, [cargar]);
 
   const registrarIntento = async () => {
-    setMsg(null);
+    setOk(null);
+    setError(null);
+    setGuardando(true);
 
     try {
       const resp = await api("/api/resultados-street/intento", {
         method: "POST",
         body: JSON.stringify({
           inscrito_id: Number(inscritoId),
-          movimiento: movActivo,
+          movimiento: movKey,
           peso: Number(peso),
           es_valido: esValido,
         }),
       });
 
-      setMsg(`Intento registrado (peso ${resp.intento.peso} kg)`);
-      setPeso("");
+      setOk(
+        `Intento ${resp.intento.numero_intento} registrado: ${resp.intento.peso} kg · ` +
+          `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
+      );
+      // Sin recargar, el contador se quedaría clavado en el intento anterior.
+      await cargar();
+      setEsValido(true);
     } catch (err) {
-      setMsg(err.message);
+      setError(err.message);
+    } finally {
+      setGuardando(false);
     }
   };
 
-  if (error) return <p className="err">{error}</p>;
+  if (error && !inscrito) return <p className="err">{error}</p>;
   if (!inscrito) return <div className="loader">Cargando participante…</div>;
-  // Prevent attempts if body weight not registered
-  if (!inscrito.peso_corporal) {
+
+  if (!MOV_LABEL[movKey]) {
     return (
-      <p className="err">
-        Debe registrar el peso corporal antes de registrar intentos.
-        <br />
-        <Link className="btn secondary" to="/street/panel">Ir al panel de peso</Link>
-      </p>
+      <div className="street-page attempt shell">
+        <p className="err">No se indicó qué movimiento se está juzgando.</p>
+        <Link className="btn secondary" to="/street/registro">
+          Volver al registro
+        </Link>
+      </div>
     );
   }
 
+  // El backend exige el pesaje antes de cualquier intento.
+  if (!inscrito.peso_corporal) {
+    return (
+      <div className="street-page attempt shell">
+        <p className="err">Debe registrar el peso corporal antes de registrar intentos.</p>
+        <Link className="btn secondary" to="/street/panel">
+          Ir al panel de peso
+        </Link>
+      </div>
+    );
+  }
+
+  const { intentos, proximo, completado, pesoMinimo } = resumenIntentos(inscrito, movKey);
+
   return (
     <div className="street-page attempt shell">
-      <h1>Intento – {inscrito.nombre_completo}</h1>
+      <h1>{inscrito.nombre_completo}</h1>
+
+      <p className="attempt-meta">
+        <span>Dorsal #{inscrito.numero_dorsal}</span>
+        <span>Peso corporal: {inscrito.peso_corporal} kg</span>
+      </p>
 
       <div className="card attempt-form">
-        <p>Dorsal: #{inscrito.numero_dorsal}</p>
-        <p>Peso corporal: {inscrito.peso_corporal ?? "-"} kg</p>
+        <div className="attempt-head">
+          <span className="attempt-mov">{MOV_LABEL[movKey]}</span>
 
-        <div
-          className="field"
-          style={{ marginBottom: "1rem" }}
-        >
-          <label>Peso a cargar (kg)</label>
+          {completado ? (
+            <p className="attempt-n done">
+              Los {MAX_INTENTOS} intentos ya están registrados
+            </p>
+          ) : (
+            <p className="attempt-n">
+              Intento {proximo} de {MAX_INTENTOS}
+            </p>
+          )}
+
+          {intentos.length > 0 && (
+            <div className="attempt-chips">
+              {intentos.map((i) => (
+                <span
+                  key={i.id}
+                  className={`attempt-chip ${i.es_valido ? "valid" : "invalid"}`}
+                >
+                  <span className="n">{i.numero_intento}</span>
+                  <span>{i.peso} kg</span>
+                  <span className="estado">{i.es_valido ? "VÁLIDO" : "NULO"}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="field">
+          <label htmlFor="peso-intento">Peso a cargar (kg)</label>
           <input
+            id="peso-intento"
             type="number"
+            inputMode="decimal"
+            min={pesoMinimo ?? 0}
+            step="0.01"
             value={peso}
             onChange={(e) => setPeso(e.target.value)}
             placeholder="0.00"
-            style={{ marginLeft: "1rem" }}
+            disabled={completado}
           />
+          {pesoMinimo !== null && !completado && (
+            <span className="hint">
+              Mínimo {pesoMinimo} kg: no puede ser menor al intento anterior.
+            </span>
+          )}
         </div>
 
         <div className="field">
@@ -84,6 +183,7 @@ export default function StreetAttempt() {
               type="button"
               className={`attempt-status-btn ${esValido ? "selected valid" : ""}`}
               onClick={() => setEsValido(true)}
+              disabled={completado}
             >
               VÁLIDO
             </button>
@@ -92,6 +192,7 @@ export default function StreetAttempt() {
               type="button"
               className={`attempt-status-btn ${!esValido ? "selected invalid" : ""}`}
               onClick={() => setEsValido(false)}
+              disabled={completado}
             >
               NULO
             </button>
@@ -101,17 +202,23 @@ export default function StreetAttempt() {
         <button
           className="btn btn-register"
           onClick={registrarIntento}
-          disabled={!peso}
+          disabled={completado || guardando || peso === ""}
         >
-          Registrar intento
+          {guardando
+            ? "Registrando…"
+            : completado
+              ? "Sin intentos disponibles"
+              : `Registrar intento ${proximo}`}
         </button>
       </div>
 
-      {msg && <p className="err">{msg}</p>}
+      {ok && <p className="ok">{ok}</p>}
+      {error && <p className="err">{error}</p>}
 
-      <Link className="btn ghost" to="/street/registro">
-        Volver al registro
-      </Link>
+      <div className="links">
+        <Link to="/street/registro">Volver al registro</Link>
+        <Link to={`/street/intentos/${inscritoId}`}>Ver todos los intentos</Link>
+      </div>
     </div>
   );
 }

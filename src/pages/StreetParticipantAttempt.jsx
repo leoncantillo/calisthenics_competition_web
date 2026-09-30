@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api.js";
 
@@ -23,23 +23,18 @@ export default function StreetParticipantAttempts() {
     const [error, setError] = useState(null);
     const [msg, setMsg] = useState(null);
 
-    useEffect(() => {
-        async function fetchParticipante() {
-            try {
-                const data = await api(
-                    `/api/resultados-street/participantes/${inscritoId}`
-                );
-
-                setInscrito(data.inscrito);
-            } catch (e) {
-                setError(e.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchParticipante();
+    const cargar = useCallback(async () => {
+        const data = await api(
+            `/api/resultados-street/participantes/${inscritoId}`
+        );
+        setInscrito(data.inscrito);
     }, [inscritoId]);
+
+    useEffect(() => {
+        cargar()
+            .catch((e) => setError(e.message))
+            .finally(() => setLoading(false));
+    }, [cargar]);
 
     const iniciarEdicion = (intento) => {
         setMsg(null);
@@ -69,7 +64,7 @@ export default function StreetParticipantAttempts() {
 
             const peso = Number(editingPeso);
 
-            const resp = await api(`/api/resultados-street/intento/${intento.id}`, {
+            await api(`/api/resultados-street/intento/${intento.id}`, {
                 method: "PUT",
                 body: JSON.stringify({
                     peso,
@@ -77,19 +72,9 @@ export default function StreetParticipantAttempts() {
                 }),
             });
 
-            const intentoActualizado = resp.intento;
-
-            setInscrito((prev) => ({
-                ...prev,
-                resultadoStreet: {
-                    ...prev.resultadoStreet,
-                    intentos: prev.resultadoStreet.intentos.map((item) =>
-                        item.id === intento.id
-                            ? intentoActualizado
-                            : item
-                    ),
-                },
-            }));
+            // Se recarga el participante en vez de parchear el estado a mano: así
+            // el mejor peso, el puntaje y el total quedan recalculados por el backend.
+            await cargar();
 
             setMsg("Intento actualizado correctamente");
             cancelarEdicion();
@@ -155,14 +140,16 @@ export default function StreetParticipantAttempts() {
 
                                     return (
                                         <tr key={numeroIntento}>
-                                            <td>{numeroIntento}</td>
+                                            <td data-label="Intento">{numeroIntento}</td>
 
-                                            <td>
+                                            <td data-label="Peso (kg)">
                                                 {editing ? (
                                                     <input
                                                         type="number"
+                                                        inputMode="decimal"
                                                         min="0"
                                                         step="0.01"
+                                                        aria-label={`Peso del intento ${numeroIntento}`}
                                                         value={editingPeso}
                                                         onChange={(e) =>
                                                             setEditingPeso(e.target.value)
@@ -173,7 +160,7 @@ export default function StreetParticipantAttempts() {
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td data-label="Estado">
                                                 {editing ? (
                                                     <label>
                                                         <input
@@ -196,37 +183,39 @@ export default function StreetParticipantAttempts() {
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td className="actions" data-label="Acciones">
                                                 {intento ? (
-                                                    editing ? (
-                                                        <>
-                                                            <button
-                                                                className="btn"
-                                                                type="button"
-                                                                onClick={() => guardarIntento(intento)}
-                                                                disabled={saving}
-                                                            >
-                                                                {saving ? "Guardando…" : "Guardar"}
-                                                            </button>
+                                                    <div className="row-actions">
+                                                        {editing ? (
+                                                            <>
+                                                                <button
+                                                                    className="btn"
+                                                                    type="button"
+                                                                    onClick={() => guardarIntento(intento)}
+                                                                    disabled={saving}
+                                                                >
+                                                                    {saving ? "Guardando…" : "Guardar"}
+                                                                </button>
 
+                                                                <button
+                                                                    className="btn secondary"
+                                                                    type="button"
+                                                                    onClick={cancelarEdicion}
+                                                                    disabled={saving}
+                                                                >
+                                                                    Cancelar
+                                                                </button>
+                                                            </>
+                                                        ) : (
                                                             <button
-                                                                className="btn ghost"
+                                                                className="btn secondary"
                                                                 type="button"
-                                                                onClick={cancelarEdicion}
-                                                                disabled={saving}
+                                                                onClick={() => iniciarEdicion(intento)}
                                                             >
-                                                                Cancelar
+                                                                Editar
                                                             </button>
-                                                        </>
-                                                    ) : (
-                                                        <button
-                                                            className="btn secondary"
-                                                            type="button"
-                                                            onClick={() => iniciarEdicion(intento)}
-                                                        >
-                                                            Editar
-                                                        </button>
-                                                    )
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     "-"
                                                 )}

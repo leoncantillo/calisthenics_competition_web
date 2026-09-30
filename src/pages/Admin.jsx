@@ -112,7 +112,7 @@ export default function Admin() {
             type="file"
             accept=".csv"
             onChange={(e) => setFile(e.target.files[0] || null)}
-            style={{ padding: "8px", background: "var(--bg-elev)", border: "1px solid var(--line)", borderRadius: "8px" }}
+            style={{ padding: "8px", background: "var(--bg-elev)", border: "1px solid var(--line)", borderRadius: "8px", maxWidth: "100%" }}
           />
           <button className="btn" type="submit" disabled={uploading || !file}>
             {uploading ? "Procesando CSV..." : "Subir y Sincronizar CSV"}

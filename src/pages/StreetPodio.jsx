@@ -60,23 +60,31 @@ export default function StreetPodio() {
                   key={p.inscrito_id}
                   className={p.puesto <= 3 ? "top" : ""}
                 >
-                  <td>{p.puesto}</td>
-                  <td>#{p.numero_dorsal}</td>
-                  <td>{p.nombre_completo}</td>
-                  <td>{p.peso_corporal ?? "-"}</td>
-                  <td>{p.muscle_up?.mejor_peso ?? "-"}</td>
-                  <td>{p.dominada?.mejor_peso ?? "-"}</td>
-                  <td>{p.fondos?.mejor_peso ?? "-"}</td>
-                  <td>
+                  <td data-label="Puesto">{p.puesto}</td>
+                  <td data-label="Dorsal">#{p.numero_dorsal}</td>
+                  <td data-label="Nombre">{p.nombre_completo}</td>
+                  <td data-label="Peso (kg)">{p.peso_corporal ?? "-"}</td>
+                  <td className="mov" data-label="Muscle Up">
+                    {p.muscle_up?.mejor_peso ?? "-"}
+                  </td>
+                  <td className="mov" data-label="Dominada">
+                    {p.dominada?.mejor_peso ?? "-"}
+                  </td>
+                  <td className="mov" data-label="Fondos">
+                    {p.fondos?.mejor_peso ?? "-"}
+                  </td>
+                  <td data-label="Total">
                     <strong>{p.total_puntaje ?? "-"}</strong>
                   </td>
-                  <td>
-                    <Link
-                      className="btn secondary"
-                      to={`/street/intentos/${p.inscrito_id}`}
-                    >
-                      Ver intentos
-                    </Link>
+                  <td className="actions" data-label="Acciones">
+                    <div className="row-actions">
+                      <Link
+                        className="btn secondary"
+                        to={`/street/intentos/${p.inscrito_id}`}
+                      >
+                        Ver intentos
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
