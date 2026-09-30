@@ -14,11 +14,18 @@
 
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100%; }
+html, body { overflow-x: hidden; }
 body {
   margin: 0;
   font-family: "Segoe UI", system-ui, sans-serif;
   background: radial-gradient(1200px 600px at 20% -10%, #1a2748 0%, var(--bg) 55%);
   color: var(--text);
+}
+
+.loader {
+  padding: 24px var(--pad);
+  color: var(--muted);
+  text-align: center;
 }
 
 a { color: var(--gold); text-decoration: none; }
@@ -110,7 +117,31 @@ button, input, select { font: inherit; }
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 12px;
+  min-height: 44px;
 }
+
+/* Base 220px: en el teléfono los botones se apilan, en escritorio van en fila. */
+.toolbar .btn { width: auto; flex: 1 1 220px; }
+
+/* Etiqueta arriba y campo a lo ancho: es lo que funciona con el pulgar. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.field > label { color: var(--muted); font-size: 0.85rem; }
+.field input, .field select { width: 100%; }
+
+/* Selector de movimiento + acceso al podio, en una fila que se apila si no entra. */
+.street-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.street-toolbar .field { flex: 1 1 200px; margin-bottom: 0; }
+.street-toolbar .btn { width: auto; flex: 1 1 160px; }
 
 .lanes {
   display: grid;
@@ -181,13 +212,57 @@ button, input, select { font: inherit; }
 .podio-row {
   display: grid;
   grid-template-columns: 36px 52px 1fr auto auto;
+  grid-template-areas: "puesto dorsal nombre valor tiempo";
   gap: 8px;
   align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid var(--line);
 }
-.podio-row .puesto { font-weight: 800; color: var(--gold); }
+.podio-row .puesto { grid-area: puesto; font-weight: 800; color: var(--gold); }
+.podio-row .dorsal { grid-area: dorsal; }
+.podio-row .nombre { grid-area: nombre; min-width: 0; overflow-wrap: anywhere; }
+.podio-row .valor  { grid-area: valor; }
+.podio-row .tiempo { grid-area: tiempo; }
 .podio-row.top { background: linear-gradient(90deg, #2a2208, transparent); margin: 0 -16px; padding: 12px 16px; border-radius: 8px; }
+
+/* En el teléfono el puesto queda a la izquierda ocupando las dos filas. */
+@media (max-width: 640px) {
+  .podio-row {
+    grid-template-columns: 28px 1fr auto;
+    grid-template-areas:
+      "puesto nombre valor"
+      "puesto dorsal tiempo";
+    row-gap: 2px;
+    align-items: baseline;
+  }
+}
+
+/* ---------- Tablas ---------- */
+
+.glass-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.glass-table th,
+.glass-table td {
+  padding: 10px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.glass-table th {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+
+.glass-table th,
+.glass-table tbody td {
+  border-bottom: 1px solid var(--line);
+}
 
 .glass-table tr.top {
   background: linear-gradient(90deg, #2a2208, transparent);
@@ -198,10 +273,98 @@ button, input, select { font: inherit; }
   color: var(--gold);
 }
 
-.glass-table th,
-.glass-table td {
-  padding-inline: 16px;
-}   
+/* Botonera dentro de una celda: nunca se estira más allá de la fila. */
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.row-actions .btn {
+  width: auto;
+  flex: 0 1 auto;
+}
+
+/*
+  Modo tarjeta: por debajo de 640px cada fila se apila y cada celda muestra su
+  encabezado con el atributo data-label, para que el juez no tenga que desplazar
+  de lado con el pulgar.
+*/
+@media (max-width: 640px) {
+  .glass-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .glass-table,
+  .glass-table tbody {
+    display: block;
+  }
+
+  .glass-table tr {
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 4px 12px;
+    margin-bottom: 10px;
+  }
+
+  .glass-table tbody td {
+    display: flex;
+    flex: 1 1 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    min-height: 40px;
+  }
+
+  .glass-table tbody tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .glass-table tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Celda de acciones: etiqueta arriba y botones a lo ancho. */
+  .glass-table tbody td.actions {
+    display: block;
+    border-bottom: 0;
+    padding-bottom: 12px;
+  }
+  .glass-table tbody td.actions::before {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .row-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  /* Los tres movimientos del podio entran en una sola tira de 3 columnas. */
+  .glass-table tbody td.mov {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2px;
+    border-bottom: 0;
+  }
+
+  .glass-table tr.top {
+    border-color: var(--gold-dim);
+  }
+}
 
 .alert-item { margin-bottom: 12px; }
 .alert-item p { margin: 6px 0; color: var(--muted); font-size: 0.9rem; }

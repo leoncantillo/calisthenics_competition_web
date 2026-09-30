@@ -155,14 +155,16 @@ export default function StreetParticipantAttempts() {
 
                                     return (
                                         <tr key={numeroIntento}>
-                                            <td>{numeroIntento}</td>
+                                            <td data-label="Intento">{numeroIntento}</td>
 
-                                            <td>
+                                            <td data-label="Peso (kg)">
                                                 {editing ? (
                                                     <input
                                                         type="number"
+                                                        inputMode="decimal"
                                                         min="0"
                                                         step="0.01"
+                                                        aria-label={`Peso del intento ${numeroIntento}`}
                                                         value={editingPeso}
                                                         onChange={(e) =>
                                                             setEditingPeso(e.target.value)
@@ -173,7 +175,7 @@ export default function StreetParticipantAttempts() {
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td data-label="Estado">
                                                 {editing ? (
                                                     <label>
                                                         <input
@@ -196,37 +198,39 @@ export default function StreetParticipantAttempts() {
                                                 )}
                                             </td>
 
-                                            <td>
+                                            <td className="actions" data-label="Acciones">
                                                 {intento ? (
-                                                    editing ? (
-                                                        <>
-                                                            <button
-                                                                className="btn"
-                                                                type="button"
-                                                                onClick={() => guardarIntento(intento)}
-                                                                disabled={saving}
-                                                            >
-                                                                {saving ? "Guardando…" : "Guardar"}
-                                                            </button>
+                                                    <div className="row-actions">
+                                                        {editing ? (
+                                                            <>
+                                                                <button
+                                                                    className="btn"
+                                                                    type="button"
+                                                                    onClick={() => guardarIntento(intento)}
+                                                                    disabled={saving}
+                                                                >
+                                                                    {saving ? "Guardando…" : "Guardar"}
+                                                                </button>
 
+                                                                <button
+                                                                    className="btn secondary"
+                                                                    type="button"
+                                                                    onClick={cancelarEdicion}
+                                                                    disabled={saving}
+                                                                >
+                                                                    Cancelar
+                                                                </button>
+                                                            </>
+                                                        ) : (
                                                             <button
-                                                                className="btn ghost"
+                                                                className="btn secondary"
                                                                 type="button"
-                                                                onClick={cancelarEdicion}
-                                                                disabled={saving}
+                                                                onClick={() => iniciarEdicion(intento)}
                                                             >
-                                                                Cancelar
+                                                                Editar
                                                             </button>
-                                                        </>
-                                                    ) : (
-                                                        <button
-                                                            className="btn secondary"
-                                                            type="button"
-                                                            onClick={() => iniciarEdicion(intento)}
-                                                        >
-                                                            Editar
-                                                        </button>
-                                                    )
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     "-"
                                                 )}

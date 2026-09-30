@@ -37,9 +37,9 @@ export default function BasicsPodio() {
           <div key={r.inscrito_id} className={`podio-row ${r.puesto <= 3 ? "top" : ""}`}>
             <span className="puesto">{r.puesto}</span>
             <span className="dorsal">#{r.numero_dorsal}</span>
-            <span>{r.nombre_completo}</span>
-            <strong>{r.marca_circuito_fmt}</strong>
-            <span className="hint">{formatTiempo(r.tiempo_segundos)}</span>
+            <span className="nombre">{r.nombre_completo}</span>
+            <strong className="valor">{r.marca_circuito_fmt}</strong>
+            <span className="tiempo hint">{formatTiempo(r.tiempo_segundos)}</span>
           </div>
         ))}
       </div>

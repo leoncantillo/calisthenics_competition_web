@@ -23,25 +23,21 @@ export default function StreetRegistration() {
       <h1>Registro Street Lifting</h1>
 
       <section className="card">
-        <div
-          className="field"
-          style={{ display: "flex", alignItems: "center", justifyContent: "left", gap: "0.5rem" }}
-        >
-          <label>Movimiento actual </label>
-          <select
-            value={movimiento}
-            onChange={(e) => setMovimiento(e.target.value)}
-          >
-            <option value="muscle_up">Muscle Up</option>
-            <option value="dominada">Dominada</option>
-            <option value="fondos">Fondos</option>
-          </select>
+        <div className="street-toolbar">
+          <div className="field">
+            <label htmlFor="mov-actual">Movimiento actual</label>
+            <select
+              id="mov-actual"
+              value={movimiento}
+              onChange={(e) => setMovimiento(e.target.value)}
+            >
+              <option value="muscle_up">Muscle Up</option>
+              <option value="dominada">Dominada</option>
+              <option value="fondos">Fondos</option>
+            </select>
+          </div>
 
-          <Link
-            className="btn primary"
-            style={{ marginLeft: "3rem", width: "fit-content" }}
-            to="/street/podio"
-          >
+          <Link className="btn primary" to="/street/podio">
             Ver Podio
           </Link>
         </div>
@@ -60,11 +56,11 @@ export default function StreetRegistration() {
           <tbody>
             {participantes.map((p) => (
               <tr key={p.id}>
-                <td>#{p.numero_dorsal}</td>
-                <td>{p.nombre_completo}</td>
-                <td>{p.peso_corporal ?? "-"}</td>
-                <td>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                <td data-label="Dorsal">#{p.numero_dorsal}</td>
+                <td data-label="Nombre">{p.nombre_completo}</td>
+                <td data-label="Peso (kg)">{p.peso_corporal ?? "-"}</td>
+                <td className="actions" data-label="Acciones">
+                  <div className="row-actions">
                     <Link
                       className="btn secondary"
                       to={`/street/intento/${p.id}?movimiento=${movimiento}`}

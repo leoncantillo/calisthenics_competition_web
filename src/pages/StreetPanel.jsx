@@ -77,15 +77,17 @@ export default function StreetPanel() {
 
               return (
                 <tr key={p.id}>
-                  <td>#{p.numero_dorsal}</td>
-                  <td>{p.nombre_completo}</td>
-                  <td>
+                  <td data-label="Dorsal">#{p.numero_dorsal}</td>
+                  <td data-label="Nombre">{p.nombre_completo}</td>
+                  <td data-label="Peso (kg)">
                     {editing ? (
                       <input
                         type="number"
+                        inputMode="decimal"
                         value={editingWeight}
                         min="0"
                         step="0.01"
+                        aria-label={`Peso corporal de ${p.nombre_completo}`}
                         onChange={(e) => setEditingWeight(e.target.value)}
                       />
                     ) : (
@@ -93,9 +95,10 @@ export default function StreetPanel() {
                     )}
                   </td>
 
-                  <td>
+                  <td className="actions" data-label="Acciones">
                     {editing ? (
                       <form
+                        className="row-actions"
                         onSubmit={async (e) => {
                           e.preventDefault();
 
@@ -109,19 +112,30 @@ export default function StreetPanel() {
                           setEditingId(null);
                         }}
                       >
-                        <button type="submit">Guardar</button>
+                        <button className="btn" type="submit">
+                          Guardar
+                        </button>
+                        <button
+                          className="btn secondary"
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                        >
+                          Cancelar
+                        </button>
                       </form>
                     ) : (
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        onClick={() => {
-                          setEditingId(p.id);
-                          setEditingWeight(p.peso_corporal ?? "");
-                        }}
-                      >
-                        Editar
-                      </button>
+                      <div className="row-actions">
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          onClick={() => {
+                            setEditingId(p.id);
+                            setEditingWeight(p.peso_corporal ?? "");
+                          }}
+                        >
+                          Editar
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
