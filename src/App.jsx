@@ -4,7 +4,6 @@ import ChooseBlock from "./pages/ChooseBlock.jsx"; // block selection page
 import BasicsPanel from "./pages/BasicsPanel.jsx";
 import BasicsPodio from "./pages/BasicsPodio.jsx";
 import Admin from "./pages/Admin.jsx"; // organization admin
-import StreetRegistration from "./pages/StreetRegistration.jsx";
 import StreetPodio from "./pages/StreetPodio.jsx";
 import StreetAttempt from "./pages/StreetAttempt.jsx";
 import StreetPanel from "./pages/StreetPanel.jsx";
@@ -22,11 +21,11 @@ export default function App() {
       <Route path="/basicos/panel" element={<BasicsPanel />} />
       <Route path="/basicos/podio" element={<BasicsPodio />} />
       {/* Street Lifting */}
-      <Route path="/street/registro" element={<StreetRegistration />} />
       <Route path="/street/podio" element={<StreetPodio />} />
       <Route path="/street/intento/:inscritoId" element={<StreetAttempt />} />
       <Route path="/street/intentos/:inscritoId" element={<StreetParticipantAttempts />} />
-      <Route path="/street/panel" element={<StreetPanel />} />
+      <Route path="/street/panel/" element={<StreetPanel />} />
+      <Route path="/street/panel/:vista" element={<StreetPanel />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

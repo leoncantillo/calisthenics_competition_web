@@ -216,7 +216,7 @@ export default function StreetAttempt() {
       {error && <p className="err">{error}</p>}
 
       <div className="links">
-        <Link to="/street/registro">Volver al registro</Link>
+        <Link to="/street/panel/registro_intentos">Volver al registro</Link>
         <Link to={`/street/intentos/${inscritoId}`}>Ver todos los intentos</Link>
       </div>
     </div>
