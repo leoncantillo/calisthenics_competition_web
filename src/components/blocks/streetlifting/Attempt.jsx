@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { api } from "../../../api.js";
 import { MAX_INTENTOS, MOV_LABEL } from "../../../utils/streetlifting/constants.js";
+import { AttemptSummary as resumenIntentos } from "../../../utils/streetlifting/AttemptSummary.js";
 import "../../../styles/StreetAttempt.css";
 
-export default function StreetAttempt({ movimientoActual, inscrito, resumenIntentos, onRegistro, cargarParticipantes }) {
+export default function Attempt({ movimientoActual, inscrito, onRegistro, onRecargar }) {
   const [peso, setPeso] = useState("");
   const [esValido, setEsValido] = useState(true);
   const [ok, setOk] = useState(null);
@@ -12,7 +13,12 @@ export default function StreetAttempt({ movimientoActual, inscrito, resumenInten
   const [guardando, setGuardando] = useState(false);
 
   const movLabel = MOV_LABEL.find((m) => m.key === movimientoActual)?.nombre || movimientoActual;
-  const { intentos, proximo, completado, pesoMinimo } = resumenIntentos;
+  const {
+    intentos,
+    proximo,
+    completado,
+    pesoMinimo
+  } = resumenIntentos(inscrito, movimientoActual, MAX_INTENTOS);
 
   const registrarIntento = async () => {
     setOk(null);
@@ -35,7 +41,7 @@ export default function StreetAttempt({ movimientoActual, inscrito, resumenInten
         `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
       );
       // Sin recargar, el contador se quedaría clavado en el intento anterior.
-      await cargarParticipantes();
+      await onRecargar();
       setEsValido(true);
     } catch (err) {
       setError(err.message);
