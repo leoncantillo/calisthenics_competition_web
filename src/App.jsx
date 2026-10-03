@@ -8,6 +8,7 @@ import StreetPodio from "./pages/StreetPodio.jsx";
 import StreetAttempt from "./pages/StreetAttempt.jsx";
 import StreetPanel from "./pages/StreetPanel.jsx";
 import StreetParticipantAttempts from "./pages/StreetParticipantAttempt.jsx";
+import StreetLayout from "./layouts/StreetLayout.jsx";
 
 export default function App() {
   return (
@@ -21,12 +22,14 @@ export default function App() {
       <Route path="/basicos/panel" element={<BasicsPanel />} />
       <Route path="/basicos/podio" element={<BasicsPodio />} />
       {/* Street Lifting */}
-      <Route path="/street/podio" element={<StreetPodio />} />
-      <Route path="/street/intento/:inscritoId" element={<StreetAttempt />} />
-      <Route path="/street/intentos/:inscritoId" element={<StreetParticipantAttempts />} />
-      <Route path="/street/panel/" element={<StreetPanel />} />
-      <Route path="/street/panel/:vista" element={<StreetPanel />} />
+      <Route path="/street" element={<StreetLayout />}>
+        <Route path="podio" element={<StreetPodio />} />
+        <Route path="intento/:inscritoId" element={<StreetAttempt />} />
+        <Route path="intentos/:inscritoId" element={<StreetParticipantAttempts />} />
+        <Route path="panel/" element={<StreetPanel />} />
+        <Route path="panel/:vista" element={<StreetPanel />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </ Routes>
   );
 }
