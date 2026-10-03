@@ -1,33 +1,21 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ParticipantsTable from "../components/blocks/streetlifting/ParticipantsTable.jsx";
 import StreetRegistration from "../components/blocks/streetlifting/StreetRegistration.jsx";
+import { useStreet } from "../context/StreetContext.jsx";
 
 export default function StreetPanel() {
   const { vista = "registro_peso" } = useParams();
-  const [participantes, setParticipantes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [msg, setMsg] = useState(null);
-  const [movimiento, setMovimiento] = useState("muscle_up");
 
-  // Load participants and movement state
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [pRes, mRes] = await Promise.all([
-          api("/api/resultados-street/participantes"),
-        ]);
-        setParticipantes(pRes.participantes || []);
-        setLoading(false);
-      } catch (e) {
-        setError(e.message);
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+  const {
+    loading,
+    error,
+    participantes,
+    movimiento,
+    setParticipantes,
+    setMovimiento
+  } = useStreet();
 
   const actualizarPesoLocal = (id, nuevoPeso) => {
     setParticipantes((prev) =>
@@ -40,7 +28,7 @@ export default function StreetPanel() {
 
   return (
     <div className="street-page admin shell">
-      <h1>1RM * Street Lifting</h1>
+      <h1>1RM · Street Lifting</h1>
 
       <div className="toolbar">
         {vista === "registro_peso" && (
@@ -83,7 +71,6 @@ export default function StreetPanel() {
         )}
       </section>
 
-      {msg && <p className="ok">{msg}</p>}
       <Link className="btn ghost" to="/">
         Volver a la página principal
       </Link>

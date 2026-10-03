@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useStreet } from "../context/StreetContext.jsx";
 import { api } from "../api.js";
 import "../styles/StreetAttempt.css";
 
@@ -36,8 +37,7 @@ export function resumenIntentos(inscrito, movimientoKey) {
 
 export default function StreetAttempt() {
   const { inscritoId } = useParams();
-  const [searchParams] = useSearchParams();
-  const movKey = String(searchParams.get("movimiento") || "")
+  const movKey = useStreet().movimiento;
 
   const [inscrito, setInscrito] = useState(null);
   const [peso, setPeso] = useState("");
@@ -76,7 +76,7 @@ export default function StreetAttempt() {
 
       setOk(
         `Intento ${resp.intento.numero_intento} registrado: ${resp.intento.peso} kg · ` +
-          `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
+        `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
       );
       // Sin recargar, el contador se quedaría clavado en el intento anterior.
       await cargar();
