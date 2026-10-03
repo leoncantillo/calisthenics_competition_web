@@ -6,26 +6,27 @@ const StreetContext = createContext();
 export function StreetProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const MAX_INTENTOS = 3;
     const [participantes, setParticipantes] = useState([]);
 
     const [movimiento, setMovimiento] = useState(
         () => localStorage.getItem("street_movimiento") || "muscle_up"
     );
 
-    useEffect(() => {
-        async function fetchParticipantes() {
-            try {
-                const res = await api("/api/resultados-street/participantes");
+    const cargarParticipantes = async () => {
+        try {
+            const res = await api("/api/resultados-street/participantes");
 
-                setParticipantes(res.participantes || []);
-            } catch (e) {
-                setError(e.message);
-            } finally {
-                setLoading(false);
-            }
+            setParticipantes(res.participantes || []);
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
         }
+    };
 
-        fetchParticipantes();
+    useEffect(() => {
+        cargarParticipantes();
     }, []);
 
     useEffect(() => {
@@ -41,6 +42,8 @@ export function StreetProvider({ children }) {
                 movimiento,
                 setMovimiento,
                 setParticipantes,
+                cargarParticipantes,
+                maxIntentos: MAX_INTENTOS,
             }}
         >
             {children}
