@@ -6,7 +6,6 @@ const StreetContext = createContext();
 export function StreetProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const MAX_INTENTOS = 3;
     const [participantes, setParticipantes] = useState([]);
 
     const [movimiento, setMovimiento] = useState(
@@ -43,7 +42,6 @@ export function StreetProvider({ children }) {
                 setMovimiento,
                 setParticipantes,
                 cargarParticipantes,
-                maxIntentos: MAX_INTENTOS,
             }}
         >
             {children}

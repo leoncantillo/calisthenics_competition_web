@@ -4,36 +4,8 @@ import { api } from "../api.js";
 import { useStreet } from "../context/StreetContext.jsx";
 import StreetAttempt from "../components/blocks/streetlifting/StreetAttempt.jsx";
 import PanelHeader from "../components/PanelHeader.jsx";
-
-const MOV_LABEL = [
-    { key: "muscle_up", nombre: "Muscle Up" },
-    { key: "dominada", nombre: "Dominada" },
-    { key: "fondos", nombre: "Fondos" },
-];
-
-/**
- * Deriva por cuál intento va el participante en un movimiento.
- * El backend ya asigna el número solo (intentos.length + 1) y solo avisa cuando
- * los tres están usados, así que acá se calcula lo mismo para mostrarlo antes.
- */
-export function resumenIntentos(inscrito, movimientoKey, maxIntentos) {
-    // El backend guarda los movimientos en mayúsculas, pero la URL los pasa en minúsculas.
-    const mov = inscrito?.movimientos?.[movimientoKey.toUpperCase()] || null;
-    const intentos = [...(mov?.intentos ?? [])].sort(
-        (a, b) => a.numero_intento - b.numero_intento
-    );
-    const ultimo = intentos.length > 0 ? intentos[intentos.length - 1] : null;
-
-    return {
-        intentos,
-        usados: intentos.length,
-        proximo: intentos.length + 1,
-        completado: Boolean(mov?.completado) || intentos.length >= maxIntentos,
-        // El backend rechaza cargar menos que el intento anterior.
-        pesoMinimo: ultimo ? Number(ultimo.peso) : null,
-    };
-}
-
+import { MOV_LABEL, MAX_INTENTOS } from "../utils/streetlifting/constants.js";
+import { AttemptSummary as resumenIntentos } from "../utils/streetlifting/AttemptSummary.js";
 
 export default function StreetAttempts() {
     const { inscritoId } = useParams();
@@ -44,7 +16,6 @@ export default function StreetAttempts() {
         movimiento: movimientoActual,
         participantes,
         cargarParticipantes,
-        maxIntentos,
     } = useStreet();
 
     const inscrito = participantes.find(
@@ -132,7 +103,7 @@ export default function StreetAttempts() {
     }
 
     const movimientosParticipante = inscrito.movimientos || {};
-    const resumen = resumenIntentos(inscrito, movimientoActual, maxIntentos);
+    const resumen = resumenIntentos(inscrito, movimientoActual, MAX_INTENTOS);
 
     return (
         <div className="street-page attempts shell">
@@ -146,7 +117,7 @@ export default function StreetAttempts() {
                     movimientoActual={movimientoActual}
                     movLabel={MOV_LABEL}
                     resumenIntentos={resumen}
-                    maxIntentos={maxIntentos}
+                    maxIntentos={MAX_INTENTOS}
                     onRegistro={guardarIntento}
                     cargarParticipantes={cargarParticipantes}
                 />
@@ -182,7 +153,7 @@ export default function StreetAttempts() {
                                     </thead>
 
                                     <tbody>
-                                        {Array.from({ length: maxIntentos }, (_, index) => {
+                                        {Array.from({ length: MAX_INTENTOS }, (_, index) => {
                                             const numeroIntento = index + 1;
 
                                             const intento = mP?.intentos?.find(

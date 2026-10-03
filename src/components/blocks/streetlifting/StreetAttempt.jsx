@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { api } from "../../../api.js";
+import { MAX_INTENTOS, MOV_LABEL } from "../../../utils/streetlifting/constants.js";
 import "../../../styles/StreetAttempt.css";
 
-export default function StreetAttempt({ movimientoActual, movLabel, inscrito, resumenIntentos, maxIntentos, onRegistro, cargarParticipantes }) {
+export default function StreetAttempt({ movimientoActual, inscrito, resumenIntentos, onRegistro, cargarParticipantes }) {
   const [peso, setPeso] = useState("");
   const [esValido, setEsValido] = useState(true);
   const [ok, setOk] = useState(null);
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
+  const movLabel = MOV_LABEL.find((m) => m.key === movimientoActual)?.nombre || movimientoActual;
   const { intentos, proximo, completado, pesoMinimo } = resumenIntentos;
 
   const registrarIntento = async () => {
@@ -42,7 +44,6 @@ export default function StreetAttempt({ movimientoActual, movLabel, inscrito, re
     }
   };
 
-
   return (
     <>
       <h1>{inscrito.nombre_completo}</h1>
@@ -54,15 +55,15 @@ export default function StreetAttempt({ movimientoActual, movLabel, inscrito, re
 
       <div className="card attempt-form">
         <div className="attempt-head">
-          <span className="attempt-mov">{movLabel.nombre}</span>
+          <span className="attempt-mov">{movLabel}</span>
 
           {completado ? (
             <p className="attempt-n done">
-              Los {maxIntentos} intentos ya están registrados
+              Los {MAX_INTENTOS} intentos ya están registrados
             </p>
           ) : (
             <p className="attempt-n">
-              Intento {proximo} de {maxIntentos}
+              Intento {proximo} de {MAX_INTENTOS}
             </p>
           )}
 
