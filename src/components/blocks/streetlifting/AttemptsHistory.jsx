@@ -1,40 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { api } from "../api.js";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { api } from "../../../api.js";
+import { MOV_LABEL, MAX_INTENTOS } from "../../../utils/streetlifting/constants.js";
 
-const MOVIMIENTOS = [
-    { key: "MUSCLE_UP", nombre: "Muscle Up" },
-    { key: "DOMINADA", nombre: "Dominada" },
-    { key: "FONDOS", nombre: "Fondos" },
-];
-
-const MAX_INTENTOS = 3;
-
-export default function StreetParticipantAttempts() {
-    const { inscritoId } = useParams();
-
-    const [inscrito, setInscrito] = useState(null);
+/**
+ * Vista de historial de intentos de un participante.
+ * No lee params ni contexto: todo llega por props para poder testearlo/reusarlo.
+ */
+export default function AttemptsHistory({
+    inscrito,
+    onRecargar,
+}) {
     const [editingId, setEditingId] = useState(null);
     const [editingPeso, setEditingPeso] = useState("");
     const [editingValido, setEditingValido] = useState(true);
     const [saving, setSaving] = useState(false);
-
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [msg, setMsg] = useState(null);
 
-    const cargar = useCallback(async () => {
-        const data = await api(
-            `/api/resultados-street/participantes/${inscritoId}`
-        );
-        setInscrito(data.inscrito);
-    }, [inscritoId]);
-
-    useEffect(() => {
-        cargar()
-            .catch((e) => setError(e.message))
-            .finally(() => setLoading(false));
-    }, [cargar]);
+    const movimientosParticipante = inscrito.movimientos || {};
 
     const iniciarEdicion = (intento) => {
         setMsg(null);
@@ -62,19 +46,15 @@ export default function StreetParticipantAttempts() {
         try {
             setSaving(true);
 
-            const peso = Number(editingPeso);
-
             await api(`/api/resultados-street/intento/${intento.id}`, {
                 method: "PUT",
                 body: JSON.stringify({
-                    peso,
+                    peso: Number(editingPeso),
                     es_valido: editingValido,
                 }),
             });
 
-            // Se recarga el participante en vez de parchear el estado a mano: así
-            // el mejor peso, el puntaje y el total quedan recalculados por el backend.
-            await cargar();
+            await onRecargar();
 
             setMsg("Intento actualizado correctamente");
             cancelarEdicion();
@@ -85,34 +65,16 @@ export default function StreetParticipantAttempts() {
         }
     };
 
-    if (loading) {
-        return <div className="loader">Cargando intentos…</div>;
-    }
-
-    if (error && !inscrito) {
-        return <p className="err">{error}</p>;
-    }
-
-    if (!inscrito) {
-        return <p className="err">Participante no encontrado</p>;
-    }
-
-    const movimientosParticipante = inscrito.movimientos || [];
-
     return (
-        <div className="street-page attempts shell">
-            <h1>Intentos – {inscrito.nombre_completo}</h1>
-
-            <p>Dorsal: #{inscrito.numero_dorsal}</p>
-            <p>
-                Peso corporal: {inscrito.peso_corporal ?? "-"} kg
+        <div className="history">
+            <p className="attempt-meta">
+                <span>Dorsal #{inscrito.numero_dorsal}</span>
+                <span>Peso corporal: {inscrito.peso_corporal} kg</span>
             </p>
 
-            {msg && <p className="ok">{msg}</p>}
-            {error && <p className="err">{error}</p>}
-
-            {MOVIMIENTOS.map((movimiento) => {
-                const mP = movimientosParticipante[movimiento.key] ? movimientosParticipante[movimiento.key] : null;
+            {MOV_LABEL.map((movimiento) => {
+                const mUpper = movimiento.key.toUpperCase();
+                const mP = movimientosParticipante[mUpper] ?? null;
 
                 return (
                     <section className="card" key={movimiento.key}>
@@ -151,9 +113,7 @@ export default function StreetParticipantAttempts() {
                                                         step="0.01"
                                                         aria-label={`Peso del intento ${numeroIntento}`}
                                                         value={editingPeso}
-                                                        onChange={(e) =>
-                                                            setEditingPeso(e.target.value)
-                                                        }
+                                                        onChange={(e) => setEditingPeso(e.target.value)}
                                                     />
                                                 ) : (
                                                     intento?.peso ?? "-"
@@ -166,18 +126,12 @@ export default function StreetParticipantAttempts() {
                                                         <input
                                                             type="checkbox"
                                                             checked={editingValido}
-                                                            onChange={(e) =>
-                                                                setEditingValido(e.target.checked)
-                                                            }
+                                                            onChange={(e) => setEditingValido(e.target.checked)}
                                                         />
                                                         Válido
                                                     </label>
                                                 ) : intento ? (
-                                                    intento.es_valido ? (
-                                                        "Válido"
-                                                    ) : (
-                                                        "Nulo"
-                                                    )
+                                                    intento.es_valido ? "Válido" : "Nulo"
                                                 ) : (
                                                     "-"
                                                 )}
@@ -228,6 +182,9 @@ export default function StreetParticipantAttempts() {
                     </section>
                 );
             })}
+
+            {msg && <p className="ok">{msg}</p>}
+            {error && <p className="err">{error}</p>}
 
             <Link className="btn ghost" to="/street/panel/registro_intentos">
                 Volver al registro

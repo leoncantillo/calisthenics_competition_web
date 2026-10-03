@@ -1,62 +1,24 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
-import { useStreet } from "../context/StreetContext.jsx";
-import { api } from "../api.js";
-import "../styles/StreetAttempt.css";
+import { api } from "../../../api.js";
+import { MAX_INTENTOS, MOV_LABEL } from "../../../utils/streetlifting/constants.js";
+import { AttemptSummary as resumenIntentos } from "../../../utils/streetlifting/AttemptSummary.js";
+import "../../../styles/StreetAttempt.css";
 
-const MAX_INTENTOS = 3;
-
-const MOV_LABEL = {
-  muscle_up: "Muscle Up",
-  dominada: "Dominada",
-  fondos: "Fondos",
-};
-
-/**
- * Deriva por cuál intento va el participante en un movimiento.
- * El backend ya asigna el número solo (intentos.length + 1) y solo avisa cuando
- * los tres están usados, así que acá se calcula lo mismo para mostrarlo antes.
- */
-export function resumenIntentos(inscrito, movimientoKey) {
-  // El backend guarda los movimientos en mayúsculas, pero la URL los pasa en minúsculas.
-  const mov = inscrito?.movimientos?.[movimientoKey.toUpperCase()] || null;
-  const intentos = [...(mov?.intentos ?? [])].sort(
-    (a, b) => a.numero_intento - b.numero_intento
-  );
-  const ultimo = intentos.length > 0 ? intentos[intentos.length - 1] : null;
-
-  return {
-    intentos,
-    usados: intentos.length,
-    proximo: intentos.length + 1,
-    completado: Boolean(mov?.completado) || intentos.length >= MAX_INTENTOS,
-    // El backend rechaza cargar menos que el intento anterior.
-    pesoMinimo: ultimo ? Number(ultimo.peso) : null,
-  };
-}
-
-export default function StreetAttempt() {
-  const { inscritoId } = useParams();
-  const movKey = useStreet().movimiento;
-
-  const [inscrito, setInscrito] = useState(null);
+export default function Attempt({ movimientoActual, inscrito, onRegistro, onRecargar }) {
   const [peso, setPeso] = useState("");
   const [esValido, setEsValido] = useState(true);
   const [ok, setOk] = useState(null);
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
-  const cargar = useCallback(async () => {
-    const data = await api(`/api/resultados-street/participantes/${inscritoId}`);
-    setInscrito(data.inscrito);
-    // El siguiente intento no puede pesar menos que el anterior: se precarga.
-    const { pesoMinimo } = resumenIntentos(data.inscrito, movKey);
-    setPeso(pesoMinimo !== null ? String(pesoMinimo) : "");
-  }, [inscritoId, movKey]);
-
-  useEffect(() => {
-    cargar().catch((e) => setError(e.message));
-  }, [cargar]);
+  const movLabel = MOV_LABEL.find((m) => m.key === movimientoActual)?.nombre || movimientoActual;
+  const {
+    intentos,
+    proximo,
+    completado,
+    pesoMinimo
+  } = resumenIntentos(inscrito, movimientoActual, MAX_INTENTOS);
 
   const registrarIntento = async () => {
     setOk(null);
@@ -67,8 +29,8 @@ export default function StreetAttempt() {
       const resp = await api("/api/resultados-street/intento", {
         method: "POST",
         body: JSON.stringify({
-          inscrito_id: Number(inscritoId),
-          movimiento: movKey,
+          inscrito_id: Number(inscrito.id),
+          movimiento: movimientoActual.toUpperCase(),
           peso: Number(peso),
           es_valido: esValido,
         }),
@@ -79,7 +41,7 @@ export default function StreetAttempt() {
         `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
       );
       // Sin recargar, el contador se quedaría clavado en el intento anterior.
-      await cargar();
+      await onRecargar();
       setEsValido(true);
     } catch (err) {
       setError(err.message);
@@ -88,36 +50,8 @@ export default function StreetAttempt() {
     }
   };
 
-  if (error && !inscrito) return <p className="err">{error}</p>;
-  if (!inscrito) return <div className="loader">Cargando participante…</div>;
-
-  if (!MOV_LABEL[movKey]) {
-    return (
-      <div className="street-page attempt shell">
-        <p className="err">No se indicó qué movimiento se está juzgando.</p>
-        <Link className="btn secondary" to="/street/registro">
-          Volver al registro
-        </Link>
-      </div>
-    );
-  }
-
-  // El backend exige el pesaje antes de cualquier intento.
-  if (!inscrito.peso_corporal) {
-    return (
-      <div className="street-page attempt shell">
-        <p className="err">Debe registrar el peso corporal antes de registrar intentos.</p>
-        <Link className="btn secondary" to="/street/panel">
-          Ir al panel de peso
-        </Link>
-      </div>
-    );
-  }
-
-  const { intentos, proximo, completado, pesoMinimo } = resumenIntentos(inscrito, movKey);
-
   return (
-    <div className="street-page attempt shell">
+    <>
       <h1>{inscrito.nombre_completo}</h1>
 
       <p className="attempt-meta">
@@ -127,7 +61,7 @@ export default function StreetAttempt() {
 
       <div className="card attempt-form">
         <div className="attempt-head">
-          <span className="attempt-mov">{MOV_LABEL[movKey]}</span>
+          <span className="attempt-mov">{movLabel}</span>
 
           {completado ? (
             <p className="attempt-n done">
@@ -217,8 +151,8 @@ export default function StreetAttempt() {
 
       <div className="links">
         <Link to="/street/panel/registro_intentos">Volver al registro</Link>
-        <Link to={`/street/intentos/${inscritoId}`}>Ver todos los intentos</Link>
+        <Link to={`/street/intentos/${inscrito.id}?modo=historial`}>Ver todos los intentos</Link>
       </div>
-    </div>
+    </>
   );
 }
