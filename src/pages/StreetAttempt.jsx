@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useStreet } from "../context/StreetContext.jsx";
 import { api } from "../api.js";
 import "../styles/StreetAttempt.css";
 
 const MAX_INTENTOS = 3;
 
 const MOV_LABEL = {
-  MUSCLE_UP: "Muscle Up",
-  DOMINADA: "Dominada",
-  FONDOS: "Fondos",
+  muscle_up: "Muscle Up",
+  dominada: "Dominada",
+  fondos: "Fondos",
 };
 
 /**
@@ -17,7 +18,8 @@ const MOV_LABEL = {
  * los tres están usados, así que acá se calcula lo mismo para mostrarlo antes.
  */
 export function resumenIntentos(inscrito, movimientoKey) {
-  const mov = inscrito?.movimientos?.[movimientoKey] || null;
+  // El backend guarda los movimientos en mayúsculas, pero la URL los pasa en minúsculas.
+  const mov = inscrito?.movimientos?.[movimientoKey.toUpperCase()] || null;
   const intentos = [...(mov?.intentos ?? [])].sort(
     (a, b) => a.numero_intento - b.numero_intento
   );
@@ -35,9 +37,7 @@ export function resumenIntentos(inscrito, movimientoKey) {
 
 export default function StreetAttempt() {
   const { inscritoId } = useParams();
-  const [searchParams] = useSearchParams();
-  // El movimiento llega por querystring en minúsculas ("muscle_up").
-  const movKey = String(searchParams.get("movimiento") || "").toUpperCase();
+  const movKey = useStreet().movimiento;
 
   const [inscrito, setInscrito] = useState(null);
   const [peso, setPeso] = useState("");
@@ -76,7 +76,7 @@ export default function StreetAttempt() {
 
       setOk(
         `Intento ${resp.intento.numero_intento} registrado: ${resp.intento.peso} kg · ` +
-          `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
+        `${resp.intento.es_valido ? "VÁLIDO" : "NULO"}`
       );
       // Sin recargar, el contador se quedaría clavado en el intento anterior.
       await cargar();
@@ -216,7 +216,7 @@ export default function StreetAttempt() {
       {error && <p className="err">{error}</p>}
 
       <div className="links">
-        <Link to="/street/registro">Volver al registro</Link>
+        <Link to="/street/panel/registro_intentos">Volver al registro</Link>
         <Link to={`/street/intentos/${inscritoId}`}>Ver todos los intentos</Link>
       </div>
     </div>

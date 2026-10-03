@@ -229,7 +229,7 @@ export default function StreetParticipantAttempts() {
                 );
             })}
 
-            <Link className="btn ghost" to="/street/registro">
+            <Link className="btn ghost" to="/street/panel/registro_intentos">
                 Volver al registro
             </Link>
         </div>
