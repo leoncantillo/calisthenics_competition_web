@@ -115,13 +115,13 @@ export default function StreetRegistration({ participantes, movimiento, vista, o
               <div className="row-actions">
                 <Link
                   className="btn secondary"
-                  to={`/street/intento/${p.id}`}
+                  to={`/street/intentos/${p.id}`}
                 >
                   Registrar intento
                 </Link>
                 <Link
                   className="btn secondary"
-                  to={`/street/intentos/${p.id}`}
+                  to={`/street/intentos/${p.id}?modo=historial`}
                 >
                   Ver intentos
                 </Link>
