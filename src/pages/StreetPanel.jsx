@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import ParticipantsTable from "../components/blocks/streetlifting/ParticipantsTable.jsx";
 import StreetRegistration from "../components/blocks/streetlifting/StreetRegistration.jsx";
 import { useStreet } from "../context/StreetContext.jsx";
+import PanelHeader from "../components/PanelHeader.jsx";
 
 export default function StreetPanel() {
   const { vista = "registro_peso" } = useParams();
@@ -28,7 +29,7 @@ export default function StreetPanel() {
 
   return (
     <div className="street-page admin shell">
-      <h1>1RM · Street Lifting</h1>
+      <PanelHeader>1RM · Street Lifting</PanelHeader>
 
       <div className="toolbar">
         {vista === "registro_peso" && (

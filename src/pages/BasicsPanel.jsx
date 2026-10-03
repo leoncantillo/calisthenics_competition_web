@@ -9,6 +9,7 @@ import {
   getToken,
   setControlMarca,
 } from "../api.js";
+import PanelHeader from "../components/PanelHeader.jsx";
 
 const MAX = 150;
 
@@ -99,14 +100,7 @@ export default function BasicsPanel() {
 
   return (
     <div className="shell">
-      <div className="navrow">
-        <div>
-          <div className="brand">
-            <small>Panel en vivo · {localStorage.getItem("d58_nombre")}</small>
-            <h1>Circuito 2:30 · Básicos</h1>
-          </div>
-        </div>
-      </div>
+      <PanelHeader>Circuito 2:30 · Básicos</PanelHeader>
 
       <div className="toolbar">
         <label>
