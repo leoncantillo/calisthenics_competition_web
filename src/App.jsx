@@ -21,16 +21,17 @@ export default function App() {
       {/* Básicos block */}
       <Route path="/basicos" element={<BasicsLayout />}>
         <Route path="panel" element={<BasicsPanel />} />
-        <Route path="podio" element={<BasicsPodio />} />
       </Route>
+      <Route path="podio" element={<BasicsPodio />} />
       {/* Street Lifting */}
       <Route path="/street" element={<StreetLayout />}>
-        <Route path="podio" element={<StreetPodio />} />
         <Route path="panel/" element={<StreetPanel />} />
         <Route path="panel/:vista" element={<StreetPanel />} />
         <Route path="intentos/:inscritoId" element={<StreetAttempts />} />
         <Route path="intentos/:inscritoId?modo=historial" element={<StreetAttempts />} />
       </Route>
+      <Route path="podio" element={<StreetPodio />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </ Routes>
   );
