@@ -8,12 +8,38 @@ export function setSession(data) {
   localStorage.setItem("d58_token", data.token);
   localStorage.setItem("d58_rol", data.rol);
   localStorage.setItem("d58_nombre", data.nombre || "");
+
+  const bloquesSlugs = (data.bloques || []);
+  localStorage.setItem("d58_bloquesAsignados", JSON.stringify(bloquesSlugs));
 }
 
 export function clearSession() {
-  localStorage.removeItem("d58_token");
-  localStorage.removeItem("d58_rol");
-  localStorage.removeItem("d58_nombre");
+  ["d58_token", "d58_rol", "d58_nombre", "d58_bloquesAsignados"]
+    .forEach((k) => localStorage.removeItem(k));
+}
+
+export function getBloques() {
+  try {
+    return JSON.parse(localStorage.getItem("d58_bloquesAsignados") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function slugBloque(nombre) {
+  const n = String(nombre || "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")              // descompone caracteres con tilde
+    .replace(/[\u0300-\u036f]/g, ""); // elimina las tildes
+
+  if (n.includes("basic")) return "basicos";   // "basic", "basico", "básicos"
+  if (n.includes("street")) return "street";   // "street lifting", etc.
+  return n.replace(/\s+/g, "-");               // slug genérico
+}
+
+export function getBloquesNormalizados() {
+  return getBloques().map(slugBloque)
 }
 
 export async function api(path, options = {}) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, getToken, setSession } from "../api.js";
+import { api, getBloquesNormalizados, slugBloque, getToken, setSession } from "../api.js";
+import { rutaDeBloque } from "../utils/navigation.js";
 
 export default function Login() {
   const [digits, setDigits] = useState(["", "", "", ""]);
@@ -12,9 +13,13 @@ export default function Login() {
   useEffect(() => {
     const token = getToken();
     const rol = localStorage.getItem("d58_rol");
-    if (token && rol) {
-      navigate(rol === "admin" ? "/admin" : "/chooseblock", { replace: true });
+    if (!token || !rol) return;
+
+    if (rol === "admin") {
+      navigate("/admin", { replace: true });
+      return;
     }
+      navigate("/chooseblock", { replace: true });
   }, [navigate]);
 
   function onChange(i, value) {
@@ -44,7 +49,15 @@ export default function Login() {
         body: JSON.stringify({ pin }),
       });
       setSession(data);
-      navigate(data.rol === "admin" ? "/admin" : "/chooseblock");
+
+      if (data.rol === "admin") {
+        navigate("/admin");
+      } else {
+        const bloques = (data.bloques || []);
+        if (bloques.length === 1) navigate(rutaDeBloque(slugBloque(bloques[0])));
+        else 
+        navigate("/chooseblock");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -65,6 +78,7 @@ export default function Login() {
             <input
               key={i}
               ref={refs[i]}
+              type="password"
               inputMode="numeric"
               pattern="[0-9]*"
               maxLength={1}
