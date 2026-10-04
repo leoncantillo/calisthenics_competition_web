@@ -80,7 +80,7 @@ export default function StreetPodio() {
                     <div className="row-actions">
                       <Link
                         className="btn secondary"
-                        to={`/street/intentos/${p.inscrito_id}`}
+                        to={`/street/intentos/${p.inscrito_id}?modo=historial`}
                       >
                         Ver intentos
                       </Link>
