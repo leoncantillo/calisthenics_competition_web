@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, getBloquesNormalizados, slugBloque, getToken, setSession } from "../api.js";
+import { api, slugBloque, getToken, setSession } from "../api.js";
 import { rutaDeBloque } from "../utils/navigation.js";
 
 export default function Login() {
@@ -19,7 +19,7 @@ export default function Login() {
       navigate("/admin", { replace: true });
       return;
     }
-      navigate("/chooseblock", { replace: true });
+    navigate("/chooseblock", { replace: true });
   }, [navigate]);
 
   function onChange(i, value) {
@@ -55,8 +55,8 @@ export default function Login() {
       } else {
         const bloques = (data.bloques || []);
         if (bloques.length === 1) navigate(rutaDeBloque(slugBloque(bloques[0])));
-        else 
-        navigate("/chooseblock");
+        else
+          navigate("/chooseblock");
       }
     } catch (err) {
       setError(err.message);
@@ -66,34 +66,46 @@ export default function Login() {
   }
 
   return (
-    <div className="shell">
-      <div className="brand">
-        <small>Universidad del Magdalena</small>
-        <h1>Distrito 58</h1>
-      </div>
-      <form className="card" onSubmit={submit}>
-        <p className="hint">PIN del juez o de organización.</p>
-        <div className="pin-row">
-          {digits.map((d, i) => (
-            <input
-              key={i}
-              ref={refs[i]}
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={1}
-              value={d}
-              onChange={(e) => onChange(i, e.target.value)}
-              onKeyDown={(e) => onKey(i, e)}
-              aria-label={`Dígito ${i + 1}`}
-            />
-          ))}
+    <>
+      <div className="shell">
+        <div className="brand">
+          <small>Universidad del Magdalena</small>
+          <h1>Distrito 58</h1>
         </div>
-        <p className="err">{error}</p>
-        <button className="btn" disabled={loading}>
-          {loading ? "Validando…" : "Entrar"}
-        </button>
-      </form>
-    </div>
+        <form className="card" onSubmit={submit}>
+          <p className="hint">PIN del juez o de organización.</p>
+          <div className="pin-row">
+            {digits.map((d, i) => (
+              <input
+                key={i}
+                ref={refs[i]}
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={1}
+                value={d}
+                onChange={(e) => onChange(i, e.target.value)}
+                onKeyDown={(e) => onKey(i, e)}
+                aria-label={`Dígito ${i + 1}`}
+              />
+            ))}
+          </div>
+          <p className="err">{error}</p>
+          <button className="btn" disabled={loading}>
+            {loading ? "Validando…" : "Entrar"}
+          </button>
+        </form>
+      </div >
+      <div className="shell">
+        <div className="toolbar">
+          <Link className="btn secondary" style={{ width: "auto" }} to="/basicos/podio">
+            Podio - Básicos
+          </Link>
+          <Link className="btn secondary" style={{ width: "auto" }} to="/street/podio">
+            Podio - Street Lifting
+          </Link>
+        </div>
+      </div>
+    </>
   );
 }
