@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { clearSession } from "../api.js";
+import { clearSession, getBloques, getBloquesNormalizados, slugBloque } from "../api.js";
+import { rutaDeBloque } from "../utils/navigation.js";
 
 export default function ChooseBlock() {
   const navigate = useNavigate();
+  const bloques = getBloquesNormalizados();
+
   return (
     <div className="shell">
       <div className="navrow">
@@ -24,8 +27,15 @@ export default function ChooseBlock() {
         </button>
       </div>
       <div className="toolbar">
-        <Link className="btn secondary" to="/basicos/panel">Básicos – Panel</Link>
-        <Link className="btn secondary" to="/street/panel">Street Lifting – Registro</Link>
+        {bloques.map((b) => {
+          const bloque = getBloques().find((item) => slugBloque(item) === b);
+
+          return (
+            <Link key={b} className="btn secondary" to={rutaDeBloque(b)}>
+              {bloque || b}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

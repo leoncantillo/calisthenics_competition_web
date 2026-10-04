@@ -8,6 +8,7 @@ import StreetPodio from "./pages/StreetPodio.jsx";
 import StreetPanel from "./pages/StreetPanel.jsx";
 import StreetAttempts from "./pages/StreetAttempts.jsx";
 import StreetLayout from "./layouts/StreetLayout.jsx";
+import BasicsLayout from "./layouts/BasicsLayout.jsx";
 
 export default function App() {
   return (
@@ -18,8 +19,10 @@ export default function App() {
       {/* After login, select block */}
       <Route path="/chooseblock" element={<ChooseBlock />} />
       {/* Básicos block */}
-      <Route path="/basicos/panel" element={<BasicsPanel />} />
-      <Route path="/basicos/podio" element={<BasicsPodio />} />
+      <Route path="/basicos" element={<BasicsLayout />}>
+        <Route path="panel" element={<BasicsPanel />} />
+        <Route path="podio" element={<BasicsPodio />} />
+      </Route>
       {/* Street Lifting */}
       <Route path="/street" element={<StreetLayout />}>
         <Route path="podio" element={<StreetPodio />} />

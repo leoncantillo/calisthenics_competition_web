@@ -2,13 +2,11 @@ import { Outlet } from "react-router-dom";
 import { StreetProvider } from "../context/StreetContext.jsx";
 import BlockGuard from "../components/blocks/security/BlockGuard.jsx";
 
-export default function StreetLayout() {
+export default function BasicsLayout() {
 
     return (
-        <StreetProvider>
-            <BlockGuard bloque="street">
+            <BlockGuard bloque="basicos">
                 <Outlet />
             </BlockGuard>
-        </StreetProvider>
     );
 }
