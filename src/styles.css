@@ -289,7 +289,7 @@ button, input, select { font: inherit; }
   encabezado con el atributo data-label, para que el juez no tenga que desplazar
   de lado con el pulgar.
 */
-@media (max-width: 640px) {
+@media (max-width: 960px) {
   .glass-table thead {
     position: absolute;
     width: 1px;
